@@ -12,13 +12,19 @@ const tableBody = document
   .getElementById("myTable")
   .querySelector("#tableBody");
 
-console.log(tableBody);
+// console.log(tableBody);
 
-let nameInputValue, emailInputValue, users, users1;
+let nameInputValue, emailInputValue, users;
 
-//add user function
+// const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
+
+// add user function
 const addUser = (name, email) => {
+  const  id = uuidv4();
+
   users = localStorage.getItem("users");
+  
   if (users === null) {
     users = [];
   } else {
@@ -26,8 +32,9 @@ const addUser = (name, email) => {
   }
   const newUser = {
     name: name,
-    email: email,
+    email: email
   };
+  newUser.id = id;
   users.push(newUser);
   users = JSON.stringify(users);
   localStorage.setItem("users", users);
@@ -41,11 +48,12 @@ emailInput.addEventListener("keyup", function (e) {
   emailInputValue = e.target.value;
 });
 
+
+
 submitBtn.addEventListener("click", function () {
-  // console.log(nameInputValue);
-  // console.log(emailInputValue);
   addUser(nameInputValue, emailInputValue);
 });
+
 
 // display user function
 const displayUsers = () => {
@@ -58,6 +66,9 @@ const displayUsers = () => {
 
     for (var i = 0; i < users.length; i++) {
       let newRow = document.createElement("tr");
+      let slCell = document.createElement("td");
+      slCell.innerHTML = i+1;
+      newRow.appendChild(slCell);
       for (let key in users[i]) {
         let newCell = document.createElement("td");
         newCell.innerHTML = users[i][key];
