@@ -39,6 +39,16 @@ const addUser = (name, email) => {
         alert("Email must not be empty!");
         return;
     }
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
+
+    const isValid = emailRegex.test(email);
+    if(!isValid){
+        alert("Enter a valid email");
+        return;
+    }
+    
   const  id = uuidv4();
 
   users = localStorage.getItem("users");
