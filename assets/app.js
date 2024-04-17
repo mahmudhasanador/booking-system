@@ -1,6 +1,8 @@
-const addUserBtn = document.getElementById("userBtn");
+import { v4 as uuidv4 } from "../node_modules/uuid/dist/esm-browser/index.js";
 
-const closeBtn = document.getElementById("close-btn");
+// const addUserBtn = document.getElementById("userBtn");
+
+// const closeBtn = document.getElementById("close-btn");
 
 const submitBtn = document.getElementById("submit-btn");
 
@@ -11,20 +13,36 @@ const emailInput = document.getElementById("emailInput");
 const tableBody = document
   .getElementById("myTable")
   .querySelector("#tableBody");
+const modal = document.getElementById('exampleModal');
 
-// console.log(tableBody);
 
 let nameInputValue, emailInputValue, users;
 
 // const { v4: uuidv4 } = require('uuid');
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
 // add user function
 const addUser = (name, email) => {
+
+    // if(name===undefined){
+    //     console.log(name);
+    // } 
+    // if(name===null){
+    //     console.log(name);
+    // }
+
+    if(name==="" || name===undefined){
+        alert("Name must not be empty!")
+        return;
+    }
+    if(email==="" || email===undefined){
+        alert("Email must not be empty!");
+        return;
+    }
   const  id = uuidv4();
 
   users = localStorage.getItem("users");
-  
+
   if (users === null) {
     users = [];
   } else {
@@ -35,23 +53,31 @@ const addUser = (name, email) => {
     email: email
   };
   newUser.id = id;
-  users.push(newUser);
+
+const newUserWithId ={
+    id:newUser.id,
+    name:newUser.name,
+    email:newUser.email
+}
+  users.push(newUserWithId);
   users = JSON.stringify(users);
   localStorage.setItem("users", users);
 };
 
 nameInput.addEventListener("keyup", function (e) {
-  nameInputValue = e.target.value;
+    nameInputValue = e.target.value.trim();
+  
 });
 
 emailInput.addEventListener("keyup", function (e) {
-  emailInputValue = e.target.value;
+  emailInputValue = e.target.value.trim();
 });
 
 
 
 submitBtn.addEventListener("click", function () {
   addUser(nameInputValue, emailInputValue);
+displayUsers();
 });
 
 
@@ -79,4 +105,4 @@ const displayUsers = () => {
   }
 };
 
-window.addEventListener('load', displayUsers);
+// window.addEventListener('load', displayUsers);
