@@ -4,8 +4,9 @@ const submitBtn = document.getElementById("submit-btn");
 const saveBtn = document.getElementById("save-btn");
 const addUserBtn = document.getElementById("add-user-btn");
 const nameInput = document.getElementById("nameInput");
-
+// const modal = document.getElementById("exampleModal");
 const emailInput = document.getElementById("emailInput");
+
 
 const tableBody = document
   .getElementById("myTable")
@@ -19,91 +20,113 @@ let nameInputValue,
   actionsCell,
   userId,
   editNameInp,
-  editEmailInp;
+  editEmailInp,
+  findIndex,
+  myModal;
+
+function setItem() {
+  users = JSON.stringify(users);
+  localStorage.setItem("users", users);
+}
+function getItem() {
+  users = localStorage.getItem("users");
+}
+function parseItem(){
+  users = JSON.parse(users);
+}
+
 let newUserWithId = {};
-// const { v4: uuidv4 } = require('uuid');
-// import { v4 as uuidv4 } from 'uuid';
 
 // add user function
 const addUser = (name, email) => {
-  // if(name===undefined){
-  //     console.log(name);
-  // }
-  // if(name===null){
-  //     console.log(name);
-  // }
-
   if (name === "" || name === undefined) {
     alert("Name must not be empty!");
+
     return;
   }
   if (email === "" || email === undefined) {
     alert("Email must not be empty!");
+
     return;
   }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // const emailRegex = new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
   const isValid = emailRegex.test(email);
+  console.log(isValid);
+  
   if (!isValid) {
     alert("Enter a valid email");
     return;
   }
 
   const id = uuidv4();
-
-  users = localStorage.getItem("users");
+  getItem();
 
   if (users === null) {
     users = [];
   } else {
-    users = JSON.parse(users);
+    parseItem();
   }
   const newUser = {
     name: name,
     email: email,
   };
-  newUser.id = id;
 
   newUserWithId = {
-    id: newUser.id,
+    id: id,
     name: newUser.name,
     email: newUser.email,
   };
 
   users.push(newUserWithId);
-  users = JSON.stringify(users);
-  localStorage.setItem("users", users);
+  setItem();
 };
 
-// nameInput.addEventListener("keyup", function (e) {
-//     nameInputValue = e.target.value.trim();
 
-// });
 
-// emailInput.addEventListener("keyup", function (e) {
-//   emailInputValue = e.target.value.trim();
-// });
-
-submitBtn.addEventListener("click", function () {
-  // nameInput.value = "";
+submitBtn.addEventListener("click", function (e) {
+  e.preventDefault();
   nameInputValue = nameInput.value.trim();
   emailInputValue = emailInput.value.trim();
-  console.log("Name:", nameInputValue);
-  console.log("Email:", emailInputValue);
   addUser(nameInputValue, emailInputValue);
-  nameInput.value = "";
+  
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const isValid = emailRegex.test(emailInputValue);
+
+  if (nameInputValue != "" && nameInputValue != undefined && emailInputValue!="" && emailInputValue!=undefined && isValid) {
+    
+    setTimeout(() => {
+      myModal.hide();
+      document.querySelector('.modal-backdrop').remove();
+      nameInput.value = "";
   emailInput.value = "";
+    }, 10);
+  }
+
   displayUsers();
+  // nameInput.value = "";
+  // emailInput.value = "";
+  myModal.show(); 
+
+});
+
+// add user button
+addUserBtn.addEventListener("click", function () {
+  submitBtn.style.display = "block";
+  saveBtn.style.display = "none";
+  myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('exampleModal')); 
 });
 
 // display user function
 const displayUsers = () => {
   tableBody.innerHTML = "";
-  users = localStorage.getItem("users");
+  getItem();
 
   if (users !== null) {
-    users = JSON.parse(users);
+    parseItem();
 
     for (var i = 0; i < users.length; i++) {
       let newRow = document.createElement("tr");
@@ -132,60 +155,43 @@ const displayUsers = () => {
 
       deleteButton = actionsCell.querySelector(".delete-Button");
       editButton = actionsCell.querySelector(".edit-Button");
-      // console.log(editButton);
 
       deleteButton.addEventListener("click", deleteUser);
 
       editButton.addEventListener("click", function (e) {
-        console.log("edit btn is clicked");
-
+        // myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('exampleModal')); 
         submitBtn.style.display = "none";
         saveBtn.style.display = "block";
         const selectedUser = e.target.closest("tr");
 
         userId = selectedUser.getAttribute("data-user-id");
 
-        users = localStorage.getItem("users");
+        getItem();
+
         if (users !== null) {
-          users = JSON.parse(users);
+          parseItem();
           users.forEach((user) => {
             if (userId === user.id) {
               editNameInp = document.getElementById("nameInput");
               editNameInp.value = user.name;
-              console.log(editNameInp.value);
-
-              // console.log(editNameInp.value);
 
               editEmailInp = document.getElementById("emailInput");
-
               editEmailInp.value = user.email;
-              // user.name = editNameInp.value;
-              // console.log(user.name);
-              // saveBtn.addEventListener("click",function(){
-              //   user.name = editNameInp.value;
-              //   console.log(user.name);
-
-              //   user.email = editEmailInp.value;
-              //   users = JSON.stringify(users);
-              //   localStorage.setItem("users", users);
-              //   editNameInp.value = "";
-              //   editEmailInp.value = "";
-              //   displayUsers();
-              // })
             }
           });
-          // Remove any previously added event listeners
-          saveBtn.removeEventListener("click", saveChangesHandler);
+
+          saveBtn.removeEventListener("click", editUser);
 
           // Add event listener for the "Save changes" button
-          saveBtn.addEventListener("click", saveChangesHandler);
+          saveBtn.addEventListener("click", editUser);
         }
       });
     }
   }
 };
 
-function saveChangesHandler() {
+//edit user function
+function editUser() {
   if (editNameInp.value === "" || editNameInp.value === undefined) {
     alert("Name must not be empty!");
     return;
@@ -195,7 +201,6 @@ function saveChangesHandler() {
     return;
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // const emailRegex = new RegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
   const isValid = emailRegex.test(editEmailInp.value);
   if (!isValid) {
@@ -203,73 +208,53 @@ function saveChangesHandler() {
     return;
   }
 
-  users.forEach((user) => {
-    if (userId === user.id) {
-      if (editNameInp.value && editEmailInp.value) {
-        user.name = editNameInp.value;
-        console.log(user.name);
+  
+  findIndex = users.findIndex((user) => user.id === userId);
+  users[findIndex].name = editNameInp.value;
+  users[findIndex].email = editEmailInp.value;
 
-        user.email = editEmailInp.value;
-      }
-    }
-  });
+  setItem();
 
-  localStorage.setItem("users", JSON.stringify(users));
-  editNameInp.value = "";
-  editEmailInp.value = "";
+  // if (editNameInp.value != "" && editNameInp.value != undefined && editEmailInp.value!="" && editEmailInp.value!=undefined && isValid) {
+    
+  //   setTimeout(() => {
+  //     myModal.hide();
+  //     document.querySelector('.modal-backdrop').remove();
+  
+  //   }, 10);
+  // }
   displayUsers();
+      editNameInp.value = "";
+      editEmailInp.value = "";
+  // myModal.show();
 }
-// window.addEventListener('load', displayUsers);
+
 
 // delete user function
 const deleteUser = (e) => {
   const selectedUser = e.target.closest("tr");
-  // tableBody.removeChild(selectedUser);
-  console.log(selectedUser);
   const userId = selectedUser.getAttribute("data-user-id");
-  console.log(userId);
-  users = localStorage.getItem("users");
+  getItem();
   if (users !== null) {
-    users = JSON.parse(users);
+    parseItem();
 
     users = users.filter(function (user) {
       return user.id != userId;
     });
   }
-  users = JSON.stringify(users);
-  localStorage.setItem("users", users);
+
+  setItem();
   displayUsers();
 };
 
-//edit user fuction
 
-// const editUser = (e) => {
-//   const selectedUser = e.target.closest("tr");
-//   // console.log(selectedUser);
-
-//   let userId = selectedUser.getAttribute("data-user-id");
-//   // console.log(userId);
-
-//   users = localStorage.getItem("users");
-//   if (users !== null) {
-//     users = JSON.parse(users);
-//     users.forEach(user => {
-//       if(userId===user.id){
-//         let editNameInp = document.getElementById("edit-nameInput");
-//         // console.log(editNameInp);
-//         console.log(user.name);
-//         let editEmailInp = document.getElementById("edit-emailInput");
-//         console.log(editEmailInp);
-//         editEmailInp.value = user.email;
-
-//       }
-//     });
-//   }
 
 // };
-addUserBtn.addEventListener("click", function () {
-  submitBtn.style.display = "block";
-  saveBtn.style.display = "none";
-  editNameInp.value = "";
-  editEmailInp.value = "";
-});
+
+const loadUsers = () => {
+  users = getItem() || [];
+  displayUsers();
+};
+
+// Call loadUsers when the page loads
+window.addEventListener("load", loadUsers);
