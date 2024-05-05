@@ -21,7 +21,8 @@ let nameInputValue,
   editNameInp,
   editEmailInp,
   findIndex,
-  myModal;
+  myModal,
+  isEqual;
 
 function storeUsers() {
   users = JSON.stringify(users);
@@ -38,6 +39,8 @@ let newUserWithId = {};
 
 // add user function
 const addUser = (name, email) => {
+  isEqual = false;
+
   if (name === "" || name === undefined) {
     alert("Name must not be empty!");
 
@@ -46,6 +49,24 @@ const addUser = (name, email) => {
   if (email === "" || email === undefined) {
     alert("Email must not be empty!");
 
+    return;
+  }
+  getUsers();
+  if (users === null) {
+    users = [];
+  } else {
+    parseUsers();
+  }
+  for (let user of users) {
+    if (user.email == email) {
+      isEqual = true;
+      break;
+    }
+  }
+  console.log(isEqual);
+  
+  if (isEqual) {
+    alert("User already exists");
     return;
   }
 
@@ -59,13 +80,13 @@ const addUser = (name, email) => {
   }
 
   const id = uuidv4();
-  getUsers();
+  // getUsers();
 
-  if (users === null) {
-    users = [];
-  } else {
-    parseUsers();
-  }
+  // if (users === null) {
+  //   users = [];
+  // } else {
+  //   parseUsers();
+  // }
   const newUser = {
     name: name,
     email: email,
@@ -84,7 +105,6 @@ const addUser = (name, email) => {
 // create  modal instance
 myModal = bootstrap.Modal.getOrCreateInstance(
   document.getElementById("exampleModal")
-  
 );
 
 submitBtn.addEventListener("click", function (e) {
@@ -92,6 +112,7 @@ submitBtn.addEventListener("click", function (e) {
   nameInputValue = nameInput.value.trim();
   emailInputValue = emailInput.value.trim();
   addUser(nameInputValue, emailInputValue);
+  // console.log(isEqual);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -102,7 +123,8 @@ submitBtn.addEventListener("click", function (e) {
     nameInputValue != undefined &&
     emailInputValue != "" &&
     emailInputValue != undefined &&
-    isValid
+    isValid &&
+    !isEqual
   ) {
     setTimeout(() => {
       myModal.hide();
@@ -118,6 +140,8 @@ submitBtn.addEventListener("click", function (e) {
 // add user button
 addUserBtn.addEventListener("click", function () {
   myModal.show();
+  nameInput.value ="";
+  emailInput.value ="";
   submitBtn.style.display = "block";
   saveBtn.style.display = "none";
 });
@@ -163,6 +187,7 @@ const displayUsers = () => {
       editButton.addEventListener("click", function (e) {
         myModal.show();
 
+
         submitBtn.style.display = "none";
         saveBtn.style.display = "block";
         const selectedUser = e.target.closest("tr");
@@ -194,6 +219,9 @@ const displayUsers = () => {
 
 //edit user function
 function editUser() {
+  // console.log(users);
+  
+  isEqual = false;
   if (editNameInp.value === "" || editNameInp.value === undefined) {
     alert("Name must not be empty!");
     return;
@@ -209,7 +237,20 @@ function editUser() {
     alert("Enter a valid email");
     return;
   }
+  for (let user of users) {
+    if (userId != user.id) {
+      if (user.email == editEmailInp.value) {
+        isEqual = true;
+        break;
+      }
+    }
+  }
 
+
+  if (isEqual) {
+    alert("User already exists");
+    return;
+  }
   findIndex = users.findIndex((user) => user.id === userId);
   users[findIndex].name = editNameInp.value;
   users[findIndex].email = editEmailInp.value;
@@ -258,7 +299,8 @@ function modalHandler() {
     editNameInp.value != undefined &&
     editEmailInp.value != "" &&
     editEmailInp.value != undefined &&
-    isValid
+    isValid &&
+    !isEqual
   ) {
     setTimeout(() => {
       myModal.hide();
